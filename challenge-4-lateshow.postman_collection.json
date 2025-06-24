@@ -1,0 +1,306 @@
+{
+  "info": {
+    "name": "Late Show API Challenge",
+    "_postman_id": "late-show-api-challenge",
+    "description": "Collection to test Late Show API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"testuser\", \"password\": \"testpass\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/register",
+          "host": ["{{base_url}}"],
+          "path": ["register"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Response has success message', function () {",
+              "    pm.expect(pm.response.json()).to.have.property('message', 'User registered successfully');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"testuser\", \"password\": \"testpass\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/login",
+          "host": ["{{base_url}}"],
+          "path": ["login"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response has access_token', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('access_token');",
+              "    pm.environment.set('jwt_token', jsonData.access_token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Episodes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes",
+          "host": ["{{base_url}}"],
+          "path": ["episodes"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response is an array', function () {",
+              "    pm.expect(pm.response.json()).to.be.an('array');",
+              "});",
+              "pm.test('Episodes have required fields', function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.length > 0) {",
+              "        pm.expect(jsonData[0]).to.have.property('id');",
+              "        pm.expect(jsonData[0]).to.have.property('date');",
+              "        pm.expect(jsonData[0]).to.have.property('number');",
+              "        pm.expect(jsonData[0]).to.have.property('appearances').that.is.an('array');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Episode by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes/1",
+          "host": ["{{base_url}}"],
+          "path": ["episodes", "1"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 or 404', function () {",
+              "    pm.response.to.have.status(200) || pm.response.to.have.status(404);",
+              "});",
+              "pm.test('Response has required fields for 200', function () {",
+              "    if (pm.response.code === 200) {",
+              "        var jsonData = pm.response.json();",
+              "        pm.expect(jsonData).to.have.property('id');",
+              "        pm.expect(jsonData).to.have.property('date');",
+              "        pm.expect(jsonData).to.have.property('number');",
+              "        pm.expect(jsonData).to.have.property('appearances').that.is.an('array');",
+              "    }",
+              "});",
+              "pm.test('Response has error for 404', function () {",
+              "    if (pm.response.code === 404) {",
+              "        pm.expect(pm.response.json()).to.eql({ error: 'Episode not found' });",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Episode",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/episodes/1",
+          "host": ["{{base_url}}"],
+          "path": ["episodes", "1"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 204 or 404', function () {",
+              "    pm.response.to.have.status(204) || pm.response.to.have.status(404);",
+              "});",
+              "pm.test('Response body is empty for 204', function () {",
+              "    if (pm.response.code === 204) pm.expect(pm.response.text()).to.be.empty;",
+              "});",
+              "pm.test('Response has error for 404', function () {",
+              "    if (pm.response.code === 404) {",
+              "        pm.expect(pm.response.json()).to.eql({ error: 'Episode not found' });",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Guests",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/guests",
+          "host": ["{{base_url}}"],
+          "path": ["guests"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response is an array', function () {",
+              "    pm.expect(pm.response.json()).to.be.an('array');",
+              "});",
+              "pm.test('Guests have required fields', function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.length > 0) {",
+              "        pm.expect(jsonData[0]).to.have.property('id');",
+              "        pm.expect(jsonData[0]).to.have.property('name');",
+              "        pm.expect(jsonData[0]).to.have.property('occupation');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Appearance",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\": 4, \"guest_id\": 1, \"episode_id\": 1}"
+        },
+        "url": {
+          "raw": "{{base_url}}/appearances",
+          "host": ["{{base_url}}"],
+          "path": ["appearances"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201 or 400', function () {",
+              "    pm.response.to.have.status(201) || pm.response.to.have.status(400);",
+              "});",
+              "pm.test('Response has required fields for 201', function () {",
+              "    if (pm.response.code === 201) {",
+              "        var jsonData = pm.response.json();",
+              "        pm.expect(jsonData).to.have.property('id');",
+              "        pm.expect(jsonData).to.have.property('rating');",
+              "        pm.expect(jsonData).to.have.property('guest_id');",
+              "        pm.expect(jsonData).to.have.property('episode_id');",
+              "        pm.expect(jsonData).to.have.property('guest').that.is.an('object');",
+              "    }",
+              "});",
+              "pm.test('Response has error for 400', function () {",
+              "    if (pm.response.code === 400) {",
+              "        pm.expect(pm.response.json()).to.have.property('error');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5000"
+    },
+    {
+      "key": "jwt_token",
+      "value": ""
+    }
+  ]
+}
